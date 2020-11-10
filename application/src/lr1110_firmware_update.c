@@ -41,6 +41,7 @@
 #include "lr1110_firmware_update.h"
 #include "lr1110_modem_lorawan.h"
 #include "system.h"
+#include <stdint.h>
 
 /*
  * -----------------------------------------------------------------------------
@@ -156,12 +157,13 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
             {
                 status = LR1110_FW_UPDATE_OK;
                 printf( "Expected firmware running!\n" );
+                printf( "Please flash another application (like EVK Demo App).\n" );
                 system_gpio_set_pin_state( lr1110_led_rx, SYSTEM_GPIO_PIN_STATE_HIGH );
             }
             else
             {
                 status = LR1110_FW_UPDATE_ERROR;
-                printf( "Error!\n" );
+                printf( "Error! Wrong firmware version - please retry.\n" );
                 system_gpio_set_pin_state( lr1110_led_tx, SYSTEM_GPIO_PIN_STATE_HIGH );
             }
             break;
@@ -178,16 +180,19 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
             printf( " - LR1110 FW         = 0x%08x\n", version_modem.firmware );
             printf( " - LR1110 LORAWAN    = 0x%04x\n", version_modem.lorawan );
 
-            if( version_modem.firmware == fw_expected )
+            uint32_t fw_version = ( ( uint32_t )( version_modem.functionality ) << 24 ) + version_modem.firmware;
+
+            if( fw_version == fw_expected )
             {
                 status = LR1110_FW_UPDATE_OK;
                 printf( "Expected firmware running!\n" );
+                printf( "Please flash another application (like EVK Demo App).\n" );
                 system_gpio_set_pin_state( lr1110_led_rx, SYSTEM_GPIO_PIN_STATE_HIGH );
             }
             else
             {
                 status = LR1110_FW_UPDATE_ERROR;
-                printf( "Error!\n" );
+                printf( "Error! Wrong firmware version - please retry.\n" );
                 system_gpio_set_pin_state( lr1110_led_tx, SYSTEM_GPIO_PIN_STATE_HIGH );
             }
             break;

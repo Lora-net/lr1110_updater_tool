@@ -120,13 +120,13 @@ int main( void )
             switch( status )
             {
             case LR1110_FW_UPDATE_OK:
-                gui_update( "UPDATE DONE!" );
+                gui_update( "UPDATE DONE!\nPlease flash another application\n(like EVK Demo App)" );
                 break;
             case LR1110_FW_UPDATE_WRONG_CHIP_TYPE:
                 gui_update( "WRONG CHIP TYPE" );
                 break;
             case LR1110_FW_UPDATE_ERROR:
-                gui_update( "ERROR" );
+                gui_update( "ERROR\nWrong firmware version\nPlease retry" );
                 break;
             }
 

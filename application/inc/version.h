@@ -41,7 +41,7 @@
 
 #ifndef DEMO_VERSION
 #warning "No demo version provided"
-#define DEMO_VERSION "v1.1.0"
+#define DEMO_VERSION "v1.2.0"
 #endif
 
 /*
