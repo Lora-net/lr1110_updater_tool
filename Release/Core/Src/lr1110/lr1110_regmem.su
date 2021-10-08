@@ -1,0 +1,13 @@
+lr1110_regmem.c:296:6:lr1110_regmem_fill_cbuffer_opcode_address	0	static
+lr1110_regmem.c:314:6:lr1110_regmem_fill_cdata	0	static
+lr1110_regmem.c:334:6:lr1110_regmem_fill_out_buffer_from_raw_buffer	12	static
+lr1110_regmem.c:150:17:lr1110_regmem_write_auxreg32	288	static
+lr1110_regmem.c:163:17:lr1110_regmem_read_auxreg32	32	static
+lr1110_regmem.c:182:17:lr1110_regmem_write_regmem32	288	static
+lr1110_regmem.c:195:17:lr1110_regmem_read_regmem32	32	static
+lr1110_regmem.c:214:17:lr1110_regmem_write_mem8	32	static
+lr1110_regmem.c:225:17:lr1110_regmem_read_mem8	32	static
+lr1110_regmem.c:235:17:lr1110_regmem_write_buffer8	24	static
+lr1110_regmem.c:246:17:lr1110_regmem_read_buffer8	24	static
+lr1110_regmem.c:261:17:lr1110_regmem_clear_rxbuffer	24	static
+lr1110_regmem.c:271:17:lr1110_regmem_write_regmem32_mask	40	static

@@ -1,0 +1,14 @@
+lr1110_bootloader.c:327:6:lr1110_bootloader_fill_cdata_flash	0	static
+lr1110_bootloader.c:95:10:min	0	static
+lr1110_bootloader.c:142:17:lr1110_bootloader_get_version	24	static
+lr1110_bootloader.c:164:17:lr1110_bootloader_erase_flash	24	static
+lr1110_bootloader.c:174:17:lr1110_bootloader_erase_page	24	static
+lr1110_bootloader.c:186:17:lr1110_bootloader_write_flash	288	static
+lr1110_bootloader.c:198:17:lr1110_bootloader_write_flash_full	24	static
+lr1110_bootloader.c:220:17:lr1110_bootloader_write_flash_encrypted	288	static
+lr1110_bootloader.c:233:17:lr1110_bootloader_write_flash_encrypted_full	24	static
+lr1110_bootloader.c:255:17:lr1110_bootloader_get_hash	24	static
+lr1110_bootloader.c:266:17:lr1110_bootloader_reboot	24	static
+lr1110_bootloader.c:278:17:lr1110_bootloader_read_pin	24	static
+lr1110_bootloader.c:289:17:lr1110_bootloader_read_chip_eui	24	static
+lr1110_bootloader.c:300:17:lr1110_bootloader_read_join_eui	24	static

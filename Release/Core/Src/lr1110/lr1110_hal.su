@@ -1,0 +1,8 @@
+lr1110_hal.c:311:6:radio_event_callback	0	static
+lr1110_hal.c:40:21:lr1110_hal_reset	8	static
+lr1110_hal.c:54:21:lr1110_hal_wakeup	8	static
+lr1110_hal.c:68:21:lr1110_hal_read	56	static
+lr1110_hal.c:146:21:lr1110_hal_write	16	static
+lr1110_hal.c:167:21:lr1110_hal_write_read	128	static
+lr1110_hal.c:271:6:lr1110_init_io_context	0	static
+lr1110_hal.c:287:6:lr1110_modem_board_init_io	32	static
