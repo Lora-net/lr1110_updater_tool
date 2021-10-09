@@ -55,9 +55,10 @@
 									<listOptionValue builtIn="false" value="../USB_Device/Target"/>
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Core/Inc"/>
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Test/Core/Inc/system}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Test/Core/Inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Test/Core/Inc/lr1110}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Test/Core/Inc/lr1110_driver}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Test/Core/Inc/lr1110_modem_driver}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Test/Core/Inc/system}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Test/Core/Inc/boards}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1735432966" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>

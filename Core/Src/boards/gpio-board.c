@@ -40,10 +40,10 @@ void GpioMcuInit( Gpio_t *obj, PinNames pin, PinModes mode, PinConfigs config, P
 
         obj->pin = pin;
 
-        if( pin == NC )
+        /*if( pin == NC )
         {
             return;
-        }
+        }*/
 
         obj->pinIndex = ( 0x01 << ( obj->pin & 0x0F ) );
 
@@ -271,10 +271,10 @@ void GpioMcuWrite( Gpio_t *obj, uint32_t value )
             assert_param( LMN_STATUS_ERROR );
         }
         // Check if pin is not connected
-        if( obj->pin == NC )
+       /* if( obj->pin == NC )
         {
             return;
-        }
+        }*/
         HAL_GPIO_WritePin( obj->port, obj->pinIndex , ( GPIO_PinState )value );
     }
     else
@@ -296,10 +296,10 @@ void GpioMcuToggle( Gpio_t *obj )
         }
 
         // Check if pin is not connected
-        if( obj->pin == NC )
+        /*if( obj->pin == NC )
         {
             return;
-        }
+        }*/
         HAL_GPIO_TogglePin( obj->port, obj->pinIndex );
     }
     else
@@ -320,10 +320,10 @@ uint32_t GpioMcuRead( Gpio_t *obj )
             assert_param( LMN_STATUS_ERROR );
         }
         // Check if pin is not connected
-        if( obj->pin == NC )
+        /*if( obj->pin == NC )
         {
             return 0;
-        }
+        }*/
         return HAL_GPIO_ReadPin( obj->port, obj->pinIndex );
     }
     else
