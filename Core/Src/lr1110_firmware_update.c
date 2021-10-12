@@ -64,11 +64,6 @@
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
 
-/*static gpio_t lr1110_busy     = { LR1110_BUSY_PORT, LR1110_BUSY_PIN };
-static gpio_t lr1110_led_tx   = { LR1110_LED_TX_PORT, LR1110_LED_TX_PIN };
-static gpio_t lr1110_led_rx   = { LR1110_LED_RX_PORT, LR1110_LED_RX_PIN };
-static gpio_t lr1110_led_scan = { LR1110_LED_SCAN_PORT, LR1110_LED_SCAN_PIN };*/
-
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE FUNCTIONS DECLARATION -------------------------------------------
@@ -85,6 +80,8 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
     lr1110_fw_update_status_t   status             = LR1110_FW_UPDATE_ERROR;
     lr1110_bootloader_version_t version_bootloader = { 0 };
     GPIO_InitTypeDef GPIO_InitStruct = {0};
+    char data[100];
+
 
     lr1110_system_stat1_t stat1;
     lr1110_system_stat2_t stat2;
@@ -92,48 +89,51 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
 
     printf( "Reset the chip...\n" );
 
-    //system_gpio_init_direction_state( lr1110_busy, SYSTEM_GPIO_PIN_DIRECTION_OUTPUT, SYSTEM_GPIO_PIN_STATE_LOW );
     GPIO_InitStruct.Pin = GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
 
     lr1110_system_reset( radio );
 
-    //system_time_wait_ms( 500 );
     HAL_Delay(500);
 
-    //system_gpio_init_direction_state( lr1110_busy, SYSTEM_GPIO_PIN_DIRECTION_INPUT, SYSTEM_GPIO_PIN_STATE_LOW );
     GPIO_InitStruct.Pin = GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-    //system_time_wait_ms( 100 );
     HAL_Delay(100);
     lr1110_modem_version_t version;
-    //lr1110_modem_get_version( radio, &version );
-
-    //lr1110_system_get_status( radio, &stat1, &stat2, &irq );
-
-    printf( "> Reset done!\n" );
-
-    //lr1110_system_reboot( radio, true );
+    sprintf( data,"> Reset done!\n\r" );
+    CDC_Transmit_FS(&data, strlen(data));
+    HAL_Delay( 500 );
 
     lr1110_bootloader_get_version( radio, &version_bootloader );
-    printf( "Chip in bootloader mode:\n" );
-    printf( " - LR1110 TYPE = 0x%02X (0xDF for production)\n", version_bootloader.type );
-    printf( " - LR1110 HW   = 0x%02X (0x20 for V2A, 0x21 for V2B, 0x22 for V2C)\n", version_bootloader.hw );
+    sprintf( data,"Chip in bootloader mode:\n\r" );
+    CDC_Transmit_FS(&data, strlen(data));
+    HAL_Delay( 500 );
+    sprintf( data," - LR1110 TYPE = 0x%02X (0xDF for production)\n\r", version_bootloader.type );
+    CDC_Transmit_FS(&data, strlen(data));
+    HAL_Delay( 500 );
+    sprintf( data," - LR1110 HW   = 0x%02X (0x20 for V2A, 0x21 for V2B, 0x22 for V2C)\n\r", version_bootloader.hw );
+    CDC_Transmit_FS(&data, strlen(data));
+    HAL_Delay( 500 );
 
     if( version_bootloader.type == 0xDF )
     {
-        //system_gpio_set_pin_state( lr1110_led_scan, SYSTEM_GPIO_PIN_STATE_HIGH );
+    	//LED on
     	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);
 
-        printf( "Start flash erase...\n" );
+        sprintf( data,"Start flash erase...\n\r" );
+        CDC_Transmit_FS(&data, strlen(data));
+        HAL_Delay( 500 );
         lr1110_bootloader_erase_flash( radio );
-        printf( "> Flash erase done!\n" );
+        sprintf(data, "> Flash erase done!\n\r" );
+        CDC_Transmit_FS(&data, strlen(data));
+        HAL_Delay( 500 );
 
         lr1110_bootloader_pin_t      pin      = { 0x00 };
         lr1110_bootloader_chip_eui_t chip_eui = { 0x00 };
@@ -143,23 +143,37 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
         lr1110_bootloader_read_chip_eui( radio, chip_eui );
         lr1110_bootloader_read_join_eui( radio, join_eui );
 
-        printf( "PIN is     0x%02X%02X%02X%02X\n", pin[0], pin[1], pin[2], pin[3] );
-        printf( "ChipEUI is 0x%02X%02X%02X%02X%02X%02X%02X%02X\n", chip_eui[0], chip_eui[1], chip_eui[2], chip_eui[3],
+        sprintf( data,"PIN is     0x%02X%02X%02X%02X\n\r", pin[0], pin[1], pin[2], pin[3] );
+        CDC_Transmit_FS(&data, strlen(data));
+        HAL_Delay( 500 );
+        sprintf( data,"ChipEUI is 0x%02X%02X%02X%02X%02X%02X%02X%02X\n\r", chip_eui[0], chip_eui[1], chip_eui[2], chip_eui[3],
                 chip_eui[4], chip_eui[5], chip_eui[6], chip_eui[7] );
-        printf( "JoinEUI is 0x%02X%02X%02X%02X%02X%02X%02X%02X\n", join_eui[0], join_eui[1], join_eui[2], join_eui[3],
+        CDC_Transmit_FS(&data, strlen(data));
+        HAL_Delay( 500 );
+        sprintf( data,"JoinEUI is 0x%02X%02X%02X%02X%02X%02X%02X%02X\n\r", join_eui[0], join_eui[1], join_eui[2], join_eui[3],
                 join_eui[4], join_eui[5], join_eui[6], join_eui[7] );
-        printf( "Start flashing firmware...\n" );
+        CDC_Transmit_FS(&data, strlen(data));
+        HAL_Delay( 500 );
+        sprintf( data,"Start flashing firmware...\n\r" );
+        CDC_Transmit_FS(&data, strlen(data));
+        HAL_Delay( 500 );
 
         lr1110_bootloader_write_flash_encrypted_full( radio, 0, buffer, length );
 
-        printf( "> Flashing done!\n" );
+        sprintf( data,"> Flashing done!\n\r" );
+        CDC_Transmit_FS(&data, strlen(data));
+        HAL_Delay( 500 );
 
-        //system_gpio_set_pin_state( lr1110_led_scan, SYSTEM_GPIO_PIN_STATE_LOW );
+        //LED off
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
 
-        printf( "Rebooting...\n" );
+        sprintf( data,"Rebooting...\n\r" );
+        CDC_Transmit_FS(&data, strlen(data));
+        HAL_Delay( 500 );
         lr1110_bootloader_reboot( radio, false );
-        printf( "> Reboot done!\n" );
+        sprintf(data, "> Reboot done!\n\r" );
+        CDC_Transmit_FS(&data, strlen(data));
+        HAL_Delay( 500 );
 
         switch( fw_update_direction )
         {
@@ -181,30 +195,33 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
                 status = LR1110_FW_UPDATE_OK;
                 printf( "Expected firmware running!\n" );
                 printf( "Please flash another application (like EVK Demo App).\n" );
-                //system_gpio_set_pin_state( lr1110_led_rx, SYSTEM_GPIO_PIN_STATE_HIGH );
-               // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
             }
             else
             {
                 status = LR1110_FW_UPDATE_ERROR;
                 printf( "Error! Wrong firmware version - please retry.\n" );
-                //system_gpio_set_pin_state( lr1110_led_tx, SYSTEM_GPIO_PIN_STATE_HIGH );
-                //HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_SET);
             }
             break;
         }
         case LR1110_FIRMWARE_UPDATE_TO_MODEM:
         {
             lr1110_modem_version_t version_modem = { 0 };
-            /*HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_SET);
-                    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);*/
-            //system_time_wait_ms( 2000 );
+
             HAL_Delay(2000);
-            lr1110_modem_get_version( radio, &version_modem );
-            printf( "Chip in modem mode:\n" );
-            printf( " - LR1110 BOOTLOADER = 0x%08x\n", version_modem.bootloader );
-            printf( " - LR1110 FW         = 0x%08x\n", version_modem.firmware );
-            printf( " - LR1110 LORAWAN    = 0x%04x\n", version_modem.lorawan );
+
+            lr1110_modem_response_code_t stats = lr1110_modem_get_version( radio, &version_modem );
+            sprintf(data, "Chip in modem mode:\n\r" );
+            CDC_Transmit_FS(&data, strlen(data));
+            HAL_Delay( 500 );
+            sprintf( data," - LR1110 BOOTLOADER = 0x%08x\n\r", version_modem.bootloader );
+            CDC_Transmit_FS(&data, strlen(data));
+            HAL_Delay( 500 );
+            sprintf( data," - LR1110 FW         = 0x%08x\n\r", version_modem.firmware );
+            CDC_Transmit_FS(&data, strlen(data));
+            HAL_Delay( 500 );
+            sprintf( data," - LR1110 LORAWAN    = 0x%04x\n\r", version_modem.lorawan );
+            CDC_Transmit_FS(&data, strlen(data));
+            HAL_Delay( 500 );
 
             uint32_t fw_version = ( ( uint32_t )( version_modem.functionality ) << 24 ) + version_modem.firmware;
 
@@ -213,7 +230,7 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
                 status = LR1110_FW_UPDATE_OK;
                 printf( "Expected firmware running!\n" );
                 printf( "Please flash another application (like EVK Demo App).\n" );
-                //system_gpio_set_pin_state( lr1110_led_rx, SYSTEM_GPIO_PIN_STATE_HIGH );
+                //LED Blink
                 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
                 HAL_Delay(500);
                 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
@@ -222,7 +239,7 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
             {
                 status = LR1110_FW_UPDATE_ERROR;
                 printf( "Error! Wrong firmware version - please retry.\n" );
-                //system_gpio_set_pin_state( lr1110_led_tx, SYSTEM_GPIO_PIN_STATE_HIGH );
+                //LED Blink
                 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_SET);
                 HAL_Delay(500);
                 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_RESET);
@@ -234,8 +251,6 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
     else
     {
         printf( "Wrong chip type!\n" );
-        //system_gpio_set_pin_state( lr1110_led_tx, SYSTEM_GPIO_PIN_STATE_HIGH );
-		//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);
 
         status = LR1110_FW_UPDATE_WRONG_CHIP_TYPE;
     }

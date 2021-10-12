@@ -35,7 +35,7 @@
 #include "lr1110_crypto_engine_types.h"
 #include "lr1110_crypto_engine.h"
 
-#include "lr1110_modem_1.0.7.h"
+#include "lr1110_modem_1.1.7.h"
 
 #include "stdio.h"
 #include "string.h"
@@ -138,16 +138,6 @@ int main(void)
   MX_QUADSPI_Init();
   /* USER CODE BEGIN 2 */
   RtcInit();
-
-  /***********************************LR1110***********************************/
-  /*//LR1110 Reset
-   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-   HAL_Delay(1);
-   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
-   HAL_Delay(500);
-
-  // Turn on Power LED (red)
-   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);*/
 
   lr1110_fw_update_status_t status     = LR1110_FW_UPDATE_ERROR;
   bool                      is_updated = false;
