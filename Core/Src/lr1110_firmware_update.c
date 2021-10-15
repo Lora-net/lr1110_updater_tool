@@ -208,6 +208,12 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
             lr1110_modem_version_t version_modem = { 0 };
 
             HAL_Delay(2000);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+
+        	while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+
+            lr1110_system_reset( radio );
 
             lr1110_modem_response_code_t stats = lr1110_modem_get_version( radio, &version_modem );
             sprintf(data, "Chip in modem mode:\n\r" );
