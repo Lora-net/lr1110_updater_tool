@@ -225,7 +225,6 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
             HAL_Delay(2000);
             lr1110_system_reset( radio );
             while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == GPIO_PIN_RESET);//DIO9 Pin
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);//LED ON
 
             lr1110_modem_get_chip_eui( radio, chip_eui1 );
 
