@@ -36,6 +36,7 @@
 #include "lr1110_crypto_engine.h"
 
 #include "lr1110_modem_1.1.7.h"
+//#include "lr1110_trx_0306.h"
 
 #include "stdio.h"
 #include "string.h"

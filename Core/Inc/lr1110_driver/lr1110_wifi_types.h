@@ -3,11 +3,12 @@
  *
  * @brief     Wi-Fi passive scan driver types for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef LR1110_WIFI_TYPES_H
@@ -202,17 +205,13 @@ typedef enum
 /*!
  * @brief The WiFi MAC address origin
  *
- * See lr1110_wifi_parse_channel_info for details about the MAC address origin estimation of the LR1110.
- *
- * @see lr1110_wifi_parse_channel_info
+ * @see lr1110_wifi_parse_channel_info for details about the MAC address origin estimation of the LR1110
  */
 typedef enum
 {
-    LR1110_WIFI_ORIGIN_BEACON_FIX_AP = 1,  //!< The MAC has been extracted from a packet coming from a fix Access Point
-    LR1110_WIFI_ORIGIN_BEACON_MOBILE_AP =
-        2,  //!< The MAC has been extracted from a packet coming from a mobile Access Point
-    LR1110_WIFI_ORIGIN_UNKNWON =
-        3,  //!< It is not possible to obtain origin information of the packet where the MAC has been extracted
+    LR1110_WIFI_ORIGIN_BEACON_FIX_AP    = 1,  //!< MAC address extracted from a packet coming from a fix Access Point
+    LR1110_WIFI_ORIGIN_BEACON_MOBILE_AP = 2,  //!< MAC address extracted from a packet coming from a mobile Access Point
+    LR1110_WIFI_ORIGIN_UNKNOWN = 3,  //!< Impossible to determine the origin of the packet the MAC is extracted from
 } lr1110_wifi_mac_origin_t;
 
 /*!
@@ -226,16 +225,16 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_WIFI_TYPE_SCAN_B     = 0x01,  //!< WiFi B
-    LR1110_WIFI_TYPE_SCAN_G     = 0x02,  //!< WiFi G
-    LR1110_WIFI_TYPE_SCAN_N     = 0x03,  //!< WiFi N
-    LR1110_WIFI_TYPE_SCAN_B_G_N = 0x04,  //!< Scan WiFi B and WiFi G/N
+    LR1110_WIFI_TYPE_SCAN_B     = 0x01,  //!< Wi-Fi B
+    LR1110_WIFI_TYPE_SCAN_G     = 0x02,  //!< Wi-Fi G
+    LR1110_WIFI_TYPE_SCAN_N     = 0x03,  //!< Wi-Fi N
+    LR1110_WIFI_TYPE_SCAN_B_G_N = 0x04,  //!< Wi-Fi B and Wi-Fi G/N
 } lr1110_wifi_signal_type_scan_t;
 
 /*!
  * @brief Wi-Fi signal type for passive scan results
  *
- * Note that the WiFi N detected is WiFi N Mixed mode, and not GreenField.
+ * Note that the Wi-Fi N detected is Wi-Fi N Mixed mode, and not GreenField.
  */
 typedef enum
 {
@@ -245,32 +244,49 @@ typedef enum
 } lr1110_wifi_signal_type_result_t;
 
 /*!
- * @brief WiFi capture mode
+ * @brief Wi-Fi capture mode
  *
  * The result type available depends on the Wi-Fi capture mode selected when calling the Wi-Fi scan API as follows:
  *
  * <table>
- * <tr> <th> Scan Mode <th> Result reading corresponding to
- * <tr> <td> LR1110_WIFI_SCAN_MODE_BEACON <td rowspan="2"> lr1110_wifi_read_basic_complete_results,
- * lr1110_wifi_read_basic_mac_type_channel_results <tr> <td> LR1110_WIFI_SCAN_MODE_BEACON_AND_PKT <tr> <td>
- * LR1110_WIFI_SCAN_MODE_FULL_BEACON <td> lr1110_wifi_read_extended_full_results
+ * <tr> <th> Scan Mode <th> Type/Sub-type selected <th> Corresponding read result function
+ * <tr> <td> LR1110_WIFI_SCAN_MODE_BEACON <td> Management/Beacon and Management/Probe Response <td rowspan="2"> @ref
+ * lr1110_wifi_read_basic_complete_results, @ref lr1110_wifi_read_basic_mac_type_channel_results <tr> <td>
+ * LR1110_WIFI_SCAN_MODE_BEACON_AND_PKT <td> Some from Management, Control and Data Types <tr> <td>
+ * LR1110_WIFI_SCAN_MODE_FULL_BEACON <td> Management/Beacon and Management/Probe Response <td> @ref
+ * lr1110_wifi_read_extended_full_results
+ * LR1110_WIFI_SCAN_MODE_UNTIL_SSID <td> Management/Beacon and Management/Probe Response - until SSID field <td> @ref
+ * lr1110_wifi_read_extended_full_results
  * </table>
+ *
+ * When the LR1110 receives a Wi-Fi frame, it starts demodulating it. Depending on the scan mode selected, only some
+ * Wi-Fi frame type/sub-types are to be kept. The demodulation step is stopped as soon as the LR1110 detects the current
+ * Wi-Fi frame is not of the required type/sub-types. This saves scan time and consumption.
+ *
+ * A Wi-Fi frame is never completely demodulated. The LR1110_WIFI_SCAN_MODE_FULL_BEACON uses a special configuration
+ * allowing to demodulate more fields (until Frame Check Sequence field), at a price of higher scan duration and higher
+ * consumption.
  */
 typedef enum
 {
-    LR1110_WIFI_SCAN_MODE_BEACON = 1,  //!< Only scan for Beacons and Probe Response Access Points' MAC addresses until
-                                       //!< Period Beacon field (Basic result)
-    LR1110_WIFI_SCAN_MODE_BEACON_AND_PKT = 2,  //!< Scan for beacons Access Points' MAC addresses until Period Beacon
-                                               //!< field, and for Packets until third Mac Address field (Basic result)
-    LR1110_WIFI_SCAN_MODE_FULL_BEACON = 4,     //!< Only scan for beacons and probes Access Points' MAC addresses until
-                                               //!< Frame Check Sequence (FCS) field (Extended result)
+    LR1110_WIFI_SCAN_MODE_BEACON =
+        1,  //!< Exposes Beacons and Probe Responses Access Points frames until Period Beacon field (Basic result)
+    LR1110_WIFI_SCAN_MODE_BEACON_AND_PKT =
+        2,  //!< Exposes some Management Access Points frames until Period Beacon field, and some other packets frame
+            //!< until third Mac Address field (Basic result)
+    LR1110_WIFI_SCAN_MODE_FULL_BEACON =
+        4,  //!< Exposes Beacons and Probes Responses Access Points frames until Frame Check Sequence (FCS) field
+            //!< (Extended result). In this mode, only signal type LR1110_WIFI_TYPE_SCAN_B is executed and other signal
+            //!< types are silently discarded.
+    LR1110_WIFI_SCAN_MODE_UNTIL_SSID = 5,  //!< Exposes Beacons and Probes Responses Access Points frames until the end
+                                           //!< of SSID field (Extended result) - available since firmware 0x0306
 } lr1110_wifi_mode_t;
 
 /*!
  * @brief Cumulative timings
  *
- * This structure is representing the cumulative time spent in the different
- * modes of Wi-Fi passive scanning procedure. Timing provided in [us].
+ * This structure is representing the cumulative time spent in the different modes of Wi-Fi passive scanning procedure.
+ * All timings are provided in [us].
  * */
 typedef struct lr1110_wifi_cumulative_timings_s
 {
@@ -311,7 +327,13 @@ typedef struct lr1110_wifi_basic_mac_type_channel_result_s
 /*!
  * @brief Extended full result structure
  *
- * The beacon period is expressed in TU (Time Unit). 1 TU is 1024 microseconds.
+ * @note The beacon period is expressed in TU (Time Unit). 1 TU is 1024 microseconds.
+ *
+ * @remark When used with @ref LR1110_WIFI_SCAN_MODE_UNTIL_SSID, the following field are always set to 0:
+ *      - field is_fcs_ok and is_fcs_checked in fcs_check_byte structure
+ *      - current_channel
+ *      - country_code
+ *      - io_regulation
  */
 typedef struct
 {
@@ -331,6 +353,7 @@ typedef struct
     uint16_t seq_control;                                 //!< Sequence Control value
     uint8_t  ssid_bytes[LR1110_WIFI_RESULT_SSID_LENGTH];  //!< Service Set
                                                           //!< IDentifier
+    lr1110_wifi_channel_t       current_channel;          //!< Current channel indicated in the Wi-Fi frame
     uint16_t                    country_code;             //!< Country Code
     uint8_t                     io_regulation;            //!< Input Output Regulation
     lr1110_wifi_fcs_info_byte_t fcs_check_byte;           //<! Frame Check Sequence info

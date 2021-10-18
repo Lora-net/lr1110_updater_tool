@@ -185,23 +185,36 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
             lr1110_system_uid_t     uid         = { 0x00 };
 
             lr1110_system_get_version( radio, &version_trx );
-            printf( "Chip in transceiver mode:\n" );
-            printf( " - LR1110 TYPE = 0x%02X\n", version_trx.type );
-            printf( " - LR1110 HW   = 0x%02X\n", version_trx.hw );
-            printf( " - LR1110 FW   = 0x%04X\n", version_trx.fw );
-
+            sprintf( data,"Chip in transceiver mode:\n\r" );
+            CDC_Transmit_FS(&data, strlen(data));
+            HAL_Delay( 500 );
+            sprintf(data, " - LR1110 TYPE = 0x%02X\n\r", version_trx.type );
+            CDC_Transmit_FS(&data, strlen(data));
+            HAL_Delay( 500 );
+            sprintf( data," - LR1110 HW   = 0x%02X\n\r", version_trx.hw );
+            CDC_Transmit_FS(&data, strlen(data));
+                        HAL_Delay( 500 );
+            sprintf( data," - LR1110 FW   = 0x%04X\n\r", version_trx.fw );
+            CDC_Transmit_FS(&data, strlen(data));
+                        HAL_Delay( 500 );
             lr1110_system_read_uid( radio, uid );
 
             if( version_trx.fw == fw_expected )
             {
                 status = LR1110_FW_UPDATE_OK;
-                printf( "Expected firmware running!\n" );
-                printf( "Please flash another application (like EVK Demo App).\n" );
+                sprintf(data, "Expected firmware running!\n\r" );
+                CDC_Transmit_FS(&data, strlen(data));
+                            HAL_Delay( 500 );
+                sprintf( data,"Please flash another application (like EVK Demo App).\n\r" );
+                CDC_Transmit_FS(&data, strlen(data));
+                            HAL_Delay( 500 );
             }
             else
             {
                 status = LR1110_FW_UPDATE_ERROR;
-                printf( "Error! Wrong firmware version - please retry.\n" );
+                sprintf( data,"Error! Wrong firmware version - please retry.\n\r" );
+                CDC_Transmit_FS(&data, strlen(data));
+                            HAL_Delay( 500 );
             }
             break;
         }
@@ -211,6 +224,8 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
 
             HAL_Delay(2000);
             lr1110_system_reset( radio );
+            while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == GPIO_PIN_RESET);//DIO9 Pin
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);//LED ON
 
             lr1110_modem_get_chip_eui( radio, chip_eui1 );
 

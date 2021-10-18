@@ -3,11 +3,12 @@
  *
  * @brief     System driver types for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef LR1110_SYSTEM_TYPES_H
@@ -73,10 +76,29 @@ extern "C" {
  * --- PUBLIC TYPES ------------------------------------------------------------
  */
 
+/**
+ * @brief Fixed-length array to store a UID
+ */
 typedef uint8_t lr1110_system_uid_t[LR1110_SYSTEM_UID_LENGTH];
+
+/**
+ * @brief Fixed-length array to store a joinEUI
+ */
 typedef uint8_t lr1110_system_join_eui_t[LR1110_SYSTEM_JOIN_EUI_LENGTH];
+
+/**
+ * @brief Fixed-length array to store a PIN
+ */
 typedef uint8_t lr1110_system_pin_t[LR1110_SYSTEM_PIN_LENGTH];
 
+/**
+ * @brief Type to store system interrupt flags
+ */
+typedef uint32_t lr1110_system_irq_mask_t;
+
+/**
+ * @brief Interrupt flags
+ */
 enum lr1110_system_irq_e
 {
     LR1110_SYSTEM_IRQ_NONE                   = ( 0 << 0 ),
@@ -105,6 +127,9 @@ enum lr1110_system_irq_e
         LR1110_SYSTEM_IRQ_FSK_ADDR_ERROR,
 };
 
+/**
+ * @brief Calibration flags
+ */
 enum lr1110_system_calibration_e
 {
     LR1110_SYSTEM_CALIB_LF_RC_MASK  = ( 1 << 0 ),
@@ -117,6 +142,9 @@ enum lr1110_system_calibration_e
 
 typedef uint8_t lr1110_system_cal_mask_t;
 
+/**
+ * @brief Error flags
+ */
 enum lr1110_system_errors_e
 {
     LR1110_SYSTEM_ERRORS_LF_RC_CALIB_MASK   = ( 1 << 0 ),
@@ -131,6 +159,9 @@ enum lr1110_system_errors_e
 
 typedef uint16_t lr1110_system_errors_t;
 
+/**
+ * @brief Chip modes
+ */
 typedef enum
 {
     LR1110_SYSTEM_CHIP_MODE_SLEEP     = 0x00,
@@ -142,6 +173,9 @@ typedef enum
     LR1110_SYSTEM_CHIP_MODE_LOC       = 0x06,
 } lr1110_system_chip_modes_t;
 
+/**
+ * @brief Reset status
+ */
 typedef enum
 {
     LR1110_SYSTEM_RESET_STATUS_CLEARED      = 0x00,
@@ -153,6 +187,9 @@ typedef enum
     LR1110_SYSTEM_RESET_STATUS_RTC_RESTART  = 0x06,
 } lr1110_system_reset_status_t;
 
+/**
+ * @brief Command status
+ */
 typedef enum
 {
     LR1110_SYSTEM_CMD_STATUS_FAIL = 0x00,
@@ -161,6 +198,9 @@ typedef enum
     LR1110_SYSTEM_CMD_STATUS_DATA = 0x03,
 } lr1110_system_command_status_t;
 
+/**
+ * @brief Low-frequency clock modes
+ */
 typedef enum
 {
     LR1110_SYSTEM_LFCLK_RC   = 0x00,  //!<  (Default)
@@ -168,13 +208,16 @@ typedef enum
     LR1110_SYSTEM_LFCLK_EXT  = 0x02
 } lr1110_system_lfclk_cfg_t;
 
+/**
+ * @brief Regulator modes
+ */
 typedef enum
 {
     LR1110_SYSTEM_REG_MODE_LDO  = 0x00,  //!< (Default)
     LR1110_SYSTEM_REG_MODE_DCDC = 0x01,
 } lr1110_system_reg_mode_t;
 
-/*!
+/**
  * @brief Info page ID
  */
 typedef enum
@@ -183,6 +226,9 @@ typedef enum
     LR1110_SYSTEM_INFOPAGE_1 = 0x01,  //!< Info page #1
 } lr1110_system_infopage_id_t;
 
+/**
+ * @brief RF switch configuration pin
+ */
 enum lr1110_system_rfswitch_cfg_pin_e
 {
     LR1110_SYSTEM_RFSW0_HIGH = ( 1 << 0 ),
@@ -192,6 +238,9 @@ enum lr1110_system_rfswitch_cfg_pin_e
     LR1110_SYSTEM_RFSW4_HIGH = ( 1 << 4 ),
 };
 
+/**
+ * @brief RF switch configuration structure definition
+ */
 typedef struct lr1110_system_rfswitch_cfg_s
 {
     uint8_t enable;
@@ -204,7 +253,7 @@ typedef struct lr1110_system_rfswitch_cfg_s
     uint8_t wifi;
 } lr1110_system_rfswitch_cfg_t;
 
-/*!
+/**
  * @brief Stand by configuration values
  */
 typedef enum
@@ -213,7 +262,7 @@ typedef enum
     LR1110_SYSTEM_STANDBY_CFG_XOSC = 0x01
 } lr1110_system_standby_cfg_t;
 
-/*!
+/**
  * @brief TCXO supply voltage values
  */
 typedef enum
@@ -228,12 +277,18 @@ typedef enum
     LR1110_SYSTEM_TCXO_CTRL_3_3V = 0x07,  //!< Supply voltage = 3.3v
 } lr1110_system_tcxo_supply_voltage_t;
 
+/**
+ * @brief Status register 1 structure definition
+ */
 typedef struct lr1110_system_stat1_s
 {
     lr1110_system_command_status_t command_status;
     bool                           is_interrupt_active;
 } lr1110_system_stat1_t;
 
+/**
+ * @brief Status register 2 structure definition
+ */
 typedef struct lr1110_system_stat2_s
 {
     lr1110_system_reset_status_t reset_status;
@@ -241,6 +296,9 @@ typedef struct lr1110_system_stat2_s
     bool                         is_running_from_flash;
 } lr1110_system_stat2_t;
 
+/**
+ * @brief Version structure definition
+ */
 typedef struct lr1110_system_version_s
 {
     uint8_t  hw;
@@ -248,6 +306,9 @@ typedef struct lr1110_system_version_s
     uint16_t fw;
 } lr1110_system_version_t;
 
+/**
+ * @brief Sleep configuration structure definition
+ */
 typedef struct lr1110_system_sleep_cfg_s
 {
     bool is_warm_start;

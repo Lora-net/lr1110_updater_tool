@@ -3,11 +3,12 @@
  *
  * @brief     Wi-Fi passive scan driver definition for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef LR1110_WIFI_H
@@ -94,7 +97,9 @@ extern "C" {
  * lr1110_wifi_read_basic_mac_type_channel_results to actually get the result bytes.
  *
  * @param [in] context Chip implementation context
- * @param [in] signal_type The type of Wi-Fi Signal to scan for
+ * @param [in] signal_type The type of Wi-Fi Signals to scan for. If LR1110_WIFI_TYPE_SCAN_B_G_N is selected, the LR1110
+ * already starts by scanning all selected channels for Wi-Fi signals B. Then the LR1110 scans all selected channels for
+ * Wi-Fi signals G/N.
  * @param [in] channels Mask of the Wi-Fi channels to scan
  * @param [in] scan_mode Scan mode to execute
  * @param [in] max_results The maximal number of results to gather. When this limit is reached, the passive scan
@@ -148,22 +153,43 @@ lr1110_status_t lr1110_wifi_search_country_code( const void* context, const lr11
  * The maximal duration of a scan is determined by the number of channels to scan times the timeout_per_channel_ms
  * configured. However, this duration may be exceeded depending on the crystal drift of the clock source and on the
  * instant the last Wi-Fi signal is detected by the device.
- * Therefore the maximal duration of a Wi-Fi scan with this API is provided by the following equation:
+ * Therefore the maximal duration of a Wi-Fi scan with this API is provided by the following equations:
+ *
+ * For signal type being `LR1110_WIFI_TYPE_SCAN_B`, `LR1110_WIFI_TYPE_SCAN_G` or `LR1110_WIFI_TYPE_SCAN_N`:
  *
  * \f$ T_{max} = N_{channel} \times ((1 + Xtal_{precision})timeout\_per\_channel + T_{offset} ) \f$
  *
  * \f$ Xtal_{precision} \f$ depends on the crystal used as clock source.
  * If the clock source is configured with 32kHz internal RC, then \f$ Xtal_{precision} = 1/100 \f$
  *
- * \f$ T_{offset} \f$ depends on the \f$ signal\_type \f$ and the \f$scan\_mode\f$ selected for Wi-Fi B:
+ * \f$ T_{offset} \f$ depends on the \f$ signal\_type \f$ and the \f$scan\_mode\f$ selected:
  *
- *   - Wi-Fi B:
+ *   - LR1110_WIFI_TYPE_SCAN_B:
  *     - if \f$scan\_mode != LR1110\_WIFI\_SCAN\_MODE\_FULL\_BEACON\f$: 2.31 ms
  *     - if \f$scan\_mode == LR1110\_WIFI\_SCAN\_MODE\_FULL\_BEACON\f$: 9.59 ms
- *   - Wi-Fi G: 52.55 ms
+ *   - LR1110_WIFI_TYPE_SCAN_G:
+ *     - if \f$scan\_mode != LR1110\_WIFI\_SCAN\_MODE\_FULL\_BEACON\f$: 52.55 ms
+ *     - if \f$scan\_mode == LR1110\_WIFI\_SCAN\_MODE\_FULL\_BEACON\f$: N/A
+ *
+ * For signal type being `LR1110_WIFI_TYPE_SCAN_B_G_N`:
+ *
+ * \f$ T_{max} = 2 \times N_{channel} \times (1 + Xtal_{precision})timeout\_per\_channel + T_{offset} \f$
+ *
+ * \f$ T_{offset} \f$ depends on the \f$scan\_mode\f$ selected:
+ * - \f$scan\_mode != LR1110\_WIFI\_SCAN\_MODE\_FULL\_BEACON\f$: 54.86 ms
+ * - \f$scan\_mode == LR1110\_WIFI\_SCAN\_MODE\_FULL\_BEACON\f$: 9.59 ms.
+ *
+ * @note With \f$scan\_mode != LR1110\_WIFI\_SCAN\_MODE\_FULL\_BEACON\f$ the T_offset is actually the worst case of
+ * Wi-Fi type B and Wi-Fi type G/N. Moreover, the Wi-Fi types G and N are scanned within the same steps (it is not two
+ * different scans). So the T_offset is the addition of 2.31 + 52.55 = 54.86.
+ *
+ * @note With \f$scan\_mode == LR1110\_WIFI\_SCAN\_MODE\_FULL\_BEACON\f$, only Wi-Fi types B can be scanned. So scans
+ * for Wi-Fi types G/N are silently discarded. Therefore the T_offset is the same as for scan with Wi-Fi type B.
  *
  * @param [in] context Chip implementation context
- * @param [in] signal_type The type of Wi-Fi Signal to scan for
+ * @param [in] signal_type The type of Wi-Fi Signals to scan for. If LR1110_WIFI_TYPE_SCAN_B_G_N is selected, the LR1110
+ * already starts by scanning all selected channels for Wi-Fi signals B. Then the LR1110 scans all selected channels for
+ * Wi-Fi signals G/N.
  * @param [in] channels Mask of the Wi-Fi channels to scan
  * @param [in] scan_mode Scan mode to execute
  * @param [in] max_results The maximal number of results to gather. When this
@@ -171,9 +197,11 @@ lr1110_status_t lr1110_wifi_search_country_code( const void* context, const lr11
  * @param [in] timeout_per_channel_ms The time to spend scanning one channel. Expressed in ms. Value 0 is forbidden and
  * will result in the raise of WIFI_SCAN_DONE interrupt, with stat1.command_status being set to
  * LR1110_SYSTEM_CMD_STATUS_PERR
- * @param [in] timeout_per_scan_ms The maximal time to spend in preamble detection. Expressed in ms. Range of allowed
- * values is [0:65535]. If set to 0, the command will keep listening until exhaustion of timeout_per_channel_ms or until
- * nb_max_results is reached
+ * @param [in] timeout_per_scan_ms The maximal time to spend in preamble detection for each single scan. The time spent
+ * on preamble search is reset at each new preamble search. If the time spent on preamble search reach this timeout, the
+ * scan on the current channel stops and start on next channel. If set to 0, the command will keep listening until
+ * exhaustion of timeout_per_channel_ms or until nb_max_results is reached. Expressed in ms. Range of allowed values is
+ * [0:65535].
  *
  * @returns Operation status
  *
@@ -212,9 +240,11 @@ lr1110_status_t lr1110_wifi_scan_time_limit( const void* context, const lr1110_w
  * @param [in] timeout_per_channel_ms The time to spend scanning one channel. Expressed in ms. Value 0 is forbidden and
  * will result in the raise of WIFI_SCAN_DONE interrupt, with stat1.command_status being set to
  * LR1110_SYSTEM_CMD_STATUS_PERR
- * @param [in] timeout_per_scan_ms The maximal duration of a single preamble search. Expressed in ms. Range of allowed
- * values is [0:65535]. If set to 0, the command will keep listening until exhaustion of timeout_per_channel_ms or until
- * nb_max_results is reached
+ * @param [in] timeout_per_scan_ms The maximal time to spend in preamble detection for each single scan. The time spent
+ * on preamble search is reset at each new preamble search. If the time spent on preamble search reach this timeout, the
+ * scan on the current channel stops and start on next channel. If set to 0, the command will keep listening until
+ * exhaustion of timeout_per_channel_ms or until nb_max_results is reached. Expressed in ms. Range of allowed values is
+ * [0:65535].
  *
  * @returns Operation status
  */
@@ -223,21 +253,6 @@ lr1110_status_t lr1110_wifi_search_country_code_time_limit( const void*         
                                                             const uint8_t                    nb_max_results,
                                                             const uint16_t                   timeout_per_channel_ms,
                                                             const uint16_t                   timeout_per_scan_ms );
-
-/*!
- * @brief Enable/Disable usage of hardware de-barker
- *
- * Hardware de-barker is used by the chip only in Wi-Fi type B passive scan. Using it dramatically reduces the passive
- * scan time. It must be enabled for country code search operations. It is enabled by default.
- *
- * @warning Disabling the Hardware De-Barker makes the LR1110_WIFI_SCAN_MODE_FULL_PKT unusable.
- *
- * @param [in] context Chip implementation context
- * @param [in] enable_hardware_debarker Set to true to enable usage of hardware de-barker, false to disable
- *
- * @returns Operation status
- */
-lr1110_status_t lr1110_wifi_cfg_hardware_debarker( const void* context, const bool enable_hardware_debarker );
 
 /*!
  * @brief Returns the number of results currently available in LR1110
@@ -547,6 +562,16 @@ uint8_t lr1110_wifi_get_nb_results_max_per_chunk( void );
  */
 lr1110_wifi_signal_type_result_t lr1110_wifi_extract_signal_type_from_data_rate_info(
     const lr1110_wifi_datarate_info_byte_t data_rate_info );
+
+/*!
+ * @brief Helper function to check if a buffer is a well-formed UTF-8 byte sequence
+ *
+ * @param [in] buffer The buffer holding the bytes to be analyzed
+ * @param [in] length The number of bytes in the buffer
+ *
+ * @returns The result of the check
+ */
+bool lr1110_wifi_is_well_formed_utf8_byte_sequence( const uint8_t* buffer, const uint8_t length );
 
 #ifdef __cplusplus
 }

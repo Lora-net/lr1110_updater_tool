@@ -1,7 +1,7 @@
-/*!
- * @file      lr1110_driver_version.c
+/**
+ * @file      lr1110_radio_timings.h
  *
- * @brief     Placeholder to keep the version of LR1110 driver.
+ * @brief     LR1110 timing helper functions definition
  *
  * The Clear BSD License
  * Copyright Semtech Corporation 2021. All rights reserved.
@@ -32,57 +32,64 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef LR1110_RADIO_TIMINGS_H
+#define LR1110_RADIO_TIMINGS_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * -----------------------------------------------------------------------------
  * --- DEPENDENCIES ------------------------------------------------------------
  */
 
-#include "lr1110_driver_version.h"
+#include "lr1110_radio_types.h"
 
 /*
  * -----------------------------------------------------------------------------
- * --- PRIVATE MACROS-----------------------------------------------------------
- */
-
-#define STR_HELPER( x ) #x
-#define STR( x ) STR_HELPER( x )
-
-#define LR1110_DRIVER_VERSION_FULL \
-    "v" STR( LR1110_DRIVER_VERSION_MAJOR ) "." STR( LR1110_DRIVER_VERSION_MINOR ) "." STR( LR1110_DRIVER_VERSION_PATCH )
-
-/*
- * -----------------------------------------------------------------------------
- * --- PRIVATE CONSTANTS -------------------------------------------------------
+ * --- PUBLIC MACROS -----------------------------------------------------------
  */
 
 /*
  * -----------------------------------------------------------------------------
- * --- PRIVATE TYPES -----------------------------------------------------------
+ * --- PUBLIC CONSTANTS --------------------------------------------------------
  */
 
 /*
  * -----------------------------------------------------------------------------
- * --- PRIVATE VARIABLES -------------------------------------------------------
+ * --- PUBLIC TYPES ------------------------------------------------------------
  */
 
 /*
  * -----------------------------------------------------------------------------
- * --- PRIVATE FUNCTIONS DECLARATION -------------------------------------------
+ * --- PUBLIC FUNCTIONS PROTOTYPES ---------------------------------------------
  */
 
-/*
- * -----------------------------------------------------------------------------
- * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
+/**
+ * @brief Get the time between the last bit sent (on Tx side) and the Rx done event (on Rx side)
+ *
+ * @param [in] mod_params Pointer to a structure holding the LoRa modulation parameters used for the computation
+ *
+ * @returns Delay in microsecond
  */
+uint32_t lr1110_radio_timings_get_delay_between_last_bit_sent_and_rx_done_in_us(
+    const lr1110_radio_mod_params_lora_t* mod_params );
 
-const char* lr1110_driver_version_get_version_string( void )
-{
-    return ( const char* ) LR1110_DRIVER_VERSION_FULL;
+/**
+ * @brief Get the time between the last bit sent and the Tx done event
+ *
+ * @param [in] ramp_time Power amplifier ramp time
+ *
+ * @returns Delay in microsecond
+ */
+uint32_t lr1110_radio_timings_get_delay_between_last_bit_sent_and_tx_done_in_us(
+    const lr1110_radio_ramp_time_t ramp_time );
+
+#ifdef __cplusplus
 }
+#endif
 
-/*
- * -----------------------------------------------------------------------------
- * --- PRIVATE FUNCTIONS DEFINITION --------------------------------------------
- */
+#endif  // LR1110_RADIO_TIMINGS_H
 
 /* --- EOF ------------------------------------------------------------------ */
