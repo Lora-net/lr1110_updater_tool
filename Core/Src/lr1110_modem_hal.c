@@ -171,7 +171,7 @@ lr1110_modem_hal_status_t lr1110_modem_hal_read( const void* context, const uint
         if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET )//Busy pin = PB1
         {
           	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);//NSS pin = PB12
-            HAL_SPI_TransmitReceive(&hspi2, &crc, rbuffer, 1,10000);
+          	HAL_Delay(1);
           	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
         }
         while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET);

@@ -223,7 +223,6 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
             lr1110_modem_version_t version_modem = { 0 };
 
             HAL_Delay(2000);
-            lr1110_system_reset( radio );
             while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == GPIO_PIN_RESET);//DIO9 Pin
 
             lr1110_modem_get_chip_eui( radio, chip_eui1 );
@@ -232,6 +231,8 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
                             chip_eui1[4], chip_eui1[5], chip_eui1[6], chip_eui1[7] );
             CDC_Transmit_FS(&data, strlen(data));
             HAL_Delay( 500 );
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);//LED ON
+
             lr1110_modem_response_code_t stats = lr1110_modem_get_version( radio, &version_modem );
             sprintf(data, "Chip in modem mode:\n\r" );
             CDC_Transmit_FS(&data, strlen(data));
