@@ -63,12 +63,25 @@ lr1110_hal_status_t lr1110_hal_read( const void* radio, const uint8_t* cbuffer, 
     uint8_t rrec[500] = { 0 };
     uint8_t rbuf[500];
 
+   /* TimerTime_t past = TimerGetCurrentTime();
+    TimerTime_t curr = 0;
+    while((HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET) || curr<3000)
+    {
+      	curr = TimerGetElapsedTime( past );
+    }*/
     while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET);
 
     /* 1st SPI transaction */
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
     HAL_SPI_TransmitReceive(&hspi2, cbuffer, rbuf, cbuffer_length,3000);
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+
+   /* past = TimerGetCurrentTime();
+    curr = 0;
+        while((HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET) || curr<3000)
+        {
+          	curr = TimerGetElapsedTime( past );
+        }*/
 
     while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET);
 

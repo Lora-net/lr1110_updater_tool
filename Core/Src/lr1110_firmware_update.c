@@ -40,7 +40,7 @@
 #include "lr1110_system.h"
 #include "lr1110_firmware_update.h"
 #include "lr1110_modem_lorawan.h"
-//#include "system.h"
+#include "timer.h"
 #include "main.h"
 #include <stdint.h>
 
@@ -137,7 +137,6 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
 
         lr1110_bootloader_pin_t      pin      = { 0x00 };
         lr1110_bootloader_chip_eui_t chip_eui = { 0x00 };
-        lr1110_bootloader_chip_eui_t chip_eui1 = { 0x00 };
         lr1110_bootloader_join_eui_t join_eui = { 0x00 };
 
         lr1110_bootloader_read_pin( radio, pin );
@@ -160,7 +159,6 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
         HAL_Delay( 500 );
 
         lr1110_bootloader_write_flash_encrypted_full( radio, 0, buffer, length );
-    	while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET);
 
         sprintf( data,"> Flashing done!\n\r" );
         CDC_Transmit_FS(&data, strlen(data));
@@ -223,14 +221,14 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
             lr1110_modem_version_t version_modem = { 0 };
 
             HAL_Delay(2000);
-            while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == GPIO_PIN_RESET);//DIO9 Pin
+            lr1110_system_reset( radio );
+            TimerTime_t past = TimerGetCurrentTime();
+            TimerTime_t curr = 0;
+            while((HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == GPIO_PIN_RESET) || curr<3000)
+            {
+              	curr = TimerGetElapsedTime( past );
+            }
 
-            lr1110_modem_get_chip_eui( radio, chip_eui1 );
-
-            sprintf( data,"ChipEUI is 0x%02X%02X%02X%02X%02X%02X%02X%02X\n\r", chip_eui1[0], chip_eui1[1], chip_eui1[2], chip_eui1[3],
-                            chip_eui1[4], chip_eui1[5], chip_eui1[6], chip_eui1[7] );
-            CDC_Transmit_FS(&data, strlen(data));
-            HAL_Delay( 500 );
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);//LED ON
 
             lr1110_modem_response_code_t stats = lr1110_modem_get_version( radio, &version_modem );
@@ -252,8 +250,12 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
             if( fw_version == fw_expected )
             {
                 status = LR1110_FW_UPDATE_OK;
-                printf( "Expected firmware running!\n" );
-                printf( "Please flash another application (like EVK Demo App).\n" );
+                sprintf( data,"Expected firmware running!\n" );
+		CDC_Transmit_FS(&data, strlen(data));
+        	HAL_Delay( 500 );
+                sprintf( data,"Please flash another application (like EVK Demo App).\n" );
+		CDC_Transmit_FS(&data, strlen(data));
+        	HAL_Delay( 500 );
                 //LED Blink
                 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
                 HAL_Delay(500);
@@ -262,7 +264,9 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
             else
             {
                 status = LR1110_FW_UPDATE_ERROR;
-                printf( "Error! Wrong firmware version - please retry.\n" );
+                sprintf( data,"Error! Wrong firmware version - please retry.\n" );
+		CDC_Transmit_FS(&data, strlen(data));
+        	HAL_Delay( 500 );
                 //LED Blink
                 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_SET);
                 HAL_Delay(500);

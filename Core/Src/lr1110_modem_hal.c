@@ -174,13 +174,16 @@ lr1110_modem_hal_status_t lr1110_modem_hal_read( const void* context, const uint
           	HAL_Delay(1);
           	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
         }
+
         while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET);
 
         crc = lr1110_modem_compute_crc( 0xFF, command, command_length );
 
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-        HAL_SPI_TransmitReceive(&hspi2, command, rbuf, command_length,3000);
-        HAL_SPI_TransmitReceive(&hspi2, crc, rbuffer, 1,3000);
+        HAL_SPI_Transmit(&hspi2, command, command_length,3000);
+        HAL_SPI_Receive(&hspi2,  rbuf, command_length, 3000);
+        HAL_SPI_Transmit(&hspi2, crc, 1,3000);
+        HAL_SPI_Receive(&hspi2,  rbuffer, 1, 3000);
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
 
         while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET);
@@ -188,9 +191,12 @@ lr1110_modem_hal_status_t lr1110_modem_hal_read( const void* context, const uint
 
        /* NSS low */
        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-       HAL_SPI_TransmitReceive(&hspi2, 0, &status, 1,3000);
-       HAL_SPI_TransmitReceive(&hspi2, 0, data, data_length,3000);
-       HAL_SPI_TransmitReceive(&hspi2, 0, ( uint8_t* ) &crc, 1 ,3000);
+       HAL_SPI_Transmit(&hspi2, 0, 1,3000);
+       HAL_SPI_Receive(&hspi2,  &status, 1, 3000);
+       HAL_SPI_Transmit(&hspi2, 0, 1,3000);
+       HAL_SPI_Receive(&hspi2,  data, data_length, 3000);
+       HAL_SPI_Transmit(&hspi2, 0, 1,3000);
+       HAL_SPI_Receive(&hspi2, ( uint8_t* ) &crc, 1 , 3000);
        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
        return LR1110_MODEM_HAL_STATUS_OK;
 }

@@ -332,10 +332,7 @@ lr1110_modem_response_code_t lr1110_modem_get_version( const void* context, lr11
 
     rc = ( lr1110_modem_response_code_t ) lr1110_modem_hal_read( context, cbuffer, LR1110_MODEM_GET_VERSION_CMD_LENGTH,
                                                                  rbuffer, LR1110_MODEM_GET_VERSION_RBUFFER_LENGTH );
-    /*char data[100];
-    sprintf( data,"Chp%d\n\r",rc );
-            CDC_Transmit_FS(&data, strlen(data));
-            HAL_Delay( 500 );*/
+
     version->bootloader = ( ( uint32_t ) rbuffer[0] << 24 ) + ( ( uint32_t ) rbuffer[1] << 16 ) +
                           ( ( uint32_t ) rbuffer[2] << 8 ) + ( ( uint32_t ) rbuffer[3] );
     version->functionality = ( lr1110_modem_functionality_t ) rbuffer[4];
