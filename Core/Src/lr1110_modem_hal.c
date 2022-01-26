@@ -1,225 +1,133 @@
 /*!
- * @file      lr1110_modem_hal.c
+ * \file      lr1110_hal.c
  *
- * @brief     Hardware Abstraction Layer (HAL) implementation for LR1110
+ * \brief     HAL implementation for LR1110 radio chip
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * \copyright Copyright Semtech Corporation 2019. All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the Semtech corporation nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
+ * Disclaimer: “The Semtech software and the documentation are provided "as is"
+ * without any express or implied warranty of any kind from Semtech or from any
+ * other person or entity, including warranties of merchantability,
+ * noninfringement, or fitness for a particular purpose.”
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * \author    Semtech WSP Applications Team
  */
 
-/*
- * -----------------------------------------------------------------------------
- * --- DEPENDENCIES ------------------------------------------------------------
- */
-
-#include <stdlib.h>
-#include "lr1110_hal.h"
 #include "lr1110_modem_hal.h"
-#include "lr1110_modem_system.h"
-#include "timer.h"
-#include "main.h"
-
-/*
- * -----------------------------------------------------------------------------
- * --- PRIVATE MACROS-----------------------------------------------------------
- */
-
-/*
- * -----------------------------------------------------------------------------
- * --- PRIVATE CONSTANTS -------------------------------------------------------
- */
-
-#define LR1110_MODEM_RESET_TIMEOUT 3000
-extern SPI_HandleTypeDef hspi2;
-
-/*
- * -----------------------------------------------------------------------------
- * --- PRIVATE TYPES -----------------------------------------------------------
- */
-
-/*
- * -----------------------------------------------------------------------------
- * --- PRIVATE VARIABLES -------------------------------------------------------
- */
-
-/*!
- * @brief LR1110 modem-e reset timeout flag
- */
-static bool lr1110_modem_reset_timeout = false;
-
-/*!
- * @brief Timer to handle the scan timeout
- */
-static TimerEvent_t lr1110_modem_reset_timeout_timer;
-
-/*
- * -----------------------------------------------------------------------------
- * --- PRIVATE FUNCTIONS DECLARATION -------------------------------------------
- */
-
-/*!
- * @brief Function to wait that the lr1110 transceiver busy line raise to high
- *
- * @param [in] context Chip implementation context
- * @param [in] timeout_ms timeout in millisec before leave the function
- *
- * @returns lr1110_hal_status_t
- */
-static lr1110_hal_status_t lr1110_hal_wait_on_busy( const void* context, uint32_t timeout_ms );
-
-/*!
- * @brief Function to wait that the lr1110 modem-e busy line fall to low
- *
- * @param [in] context Chip implementation context
- * @param [in] timeout_ms timeout in millisec before leave the function
- *
- * @returns lr1110_hal_status_t
- */
-static lr1110_modem_hal_status_t lr1110_modem_hal_wait_on_busy( const void* context, uint32_t timeout_ms );
-
-/*!
- * @brief Function to wait the that lr1110 modem-e busy line raise to high
- *
- * @param [in] context Chip implementation context
- * @param [in] timeout_ms timeout in millisec before leave the function
- *
- * @returns lr1110_hal_status_t
- */
-static lr1110_modem_hal_status_t lr1110_modem_hal_wait_on_unbusy( const void* context, uint32_t timeout_ms );
-
-/*!
- * @brief Function executed on lr1110 modem-e reset timeout event
- */
-static void on_lr1110_modem_reset_timeout_event( void* context );
-
-/*
- * -----------------------------------------------------------------------------
- * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
- */
-
-/*!
- * @brief lr1110_modem_hal.h API implementation
- */
+#include "configuration.h"
+#include "system_spi.h"
+#include "system_gpio.h"
 
 lr1110_modem_hal_status_t lr1110_modem_hal_write( const void* context, const uint8_t* command,
                                                   const uint16_t command_length, const uint8_t* data,
                                                   const uint16_t data_length )
 {
+    radio_t*                  radio_local = ( radio_t* ) context;
+    uint8_t                   crc         = 0;
+    lr1110_modem_hal_status_t rc;
 
-    uint8_t                   crc          = 0;
-    lr1110_modem_hal_status_t status;
-    uint8_t rbuffer[500];
-
-    if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET )//Busy pin = PB1
+    if( system_gpio_get_pin_state( radio_local->busy ) == SYSTEM_GPIO_PIN_STATE_HIGH )
     {
-      	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);//NSS pin = PB12
-        HAL_SPI_TransmitReceive(&hspi2, 0, rbuffer, 1,3000);
-      	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+        system_gpio_set_pin_state( radio_local->nss, SYSTEM_GPIO_PIN_STATE_LOW );
+        system_spi_write( radio_local->spi, &crc, 1 );
+        system_gpio_set_pin_state( radio_local->nss, SYSTEM_GPIO_PIN_STATE_HIGH );
     }
 
-    while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET);
+    system_gpio_wait_for_state( radio_local->busy, SYSTEM_GPIO_PIN_STATE_LOW );
 
     crc = lr1110_modem_compute_crc( 0xFF, command, command_length );
     crc = lr1110_modem_compute_crc( crc, data, data_length );
 
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-    HAL_SPI_TransmitReceive(&hspi2, command, rbuffer, command_length,3000);
-    HAL_SPI_TransmitReceive(&hspi2, data, rbuffer, data_length,3000);
-    HAL_SPI_TransmitReceive(&hspi2, &crc, rbuffer, 1,3000);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+    system_gpio_set_pin_state( radio_local->nss, SYSTEM_GPIO_PIN_STATE_LOW );
+    system_spi_write( radio_local->spi, command, command_length );
+    system_spi_write( radio_local->spi, data, data_length );
+    system_spi_write( radio_local->spi, &crc, 1 );
+    system_gpio_set_pin_state( radio_local->nss, SYSTEM_GPIO_PIN_STATE_HIGH );
 
-    while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET);
+    system_gpio_wait_for_state( radio_local->busy, SYSTEM_GPIO_PIN_STATE_HIGH );
 
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-    HAL_SPI_TransmitReceive(&hspi2, 0, &status, 1,3000);
-    HAL_SPI_TransmitReceive(&hspi2, 0, &crc, 1,3000);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+    system_gpio_set_pin_state( radio_local->nss, SYSTEM_GPIO_PIN_STATE_LOW );
+    system_spi_read( radio_local->spi, ( uint8_t* ) &rc, 1 );
+    system_spi_read( radio_local->spi, ( uint8_t* ) &crc, 1 );
+    system_gpio_set_pin_state( radio_local->nss, SYSTEM_GPIO_PIN_STATE_HIGH );
 
     return LR1110_MODEM_HAL_STATUS_OK;
+}
+
+lr1110_modem_hal_status_t lr1110_bootloader_hal_write( const void* context, const uint8_t* command,
+                                                       const uint16_t command_length, const uint8_t* data,
+                                                       const uint16_t data_length )
+{
+    return LR1110_MODEM_HAL_STATUS_BAD_FRAME;
 }
 
 lr1110_modem_hal_status_t lr1110_modem_hal_read( const void* context, const uint8_t* command,
                                                  const uint16_t command_length, uint8_t* data,
                                                  const uint16_t data_length )
 {
-        uint8_t                   crc          = 0;
-        lr1110_modem_hal_status_t status;
-        uint8_t rbuf[500];
-        uint8_t* rbuffer;
-        if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET )//Busy pin = PB1
-        {
-          	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);//NSS pin = PB12
-          	HAL_Delay(1);
-          	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
-        }
+    radio_t*                  radio_local = ( radio_t* ) context;
+    uint8_t                   crc         = 0;
+    lr1110_modem_hal_status_t rc          = 0;
+    ;
 
-        while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET);
+    if( system_gpio_get_pin_state( radio_local->busy ) == SYSTEM_GPIO_PIN_STATE_HIGH )
+    {
+        system_gpio_set_pin_state( radio_local->nss, SYSTEM_GPIO_PIN_STATE_LOW );
+        system_spi_write( radio_local->spi, &crc, 1 );
+        system_gpio_set_pin_state( radio_local->nss, SYSTEM_GPIO_PIN_STATE_HIGH );
+    }
 
-        crc = lr1110_modem_compute_crc( 0xFF, command, command_length );
+    system_gpio_wait_for_state( radio_local->busy, SYSTEM_GPIO_PIN_STATE_LOW );
 
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-        HAL_SPI_Transmit(&hspi2, command, command_length,3000);
-        HAL_SPI_Receive(&hspi2,  rbuf, command_length, 3000);
-        HAL_SPI_Transmit(&hspi2, crc, 1,3000);
-        HAL_SPI_Receive(&hspi2,  rbuffer, 1, 3000);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+    crc = lr1110_modem_compute_crc( 0xFF, command, command_length );
 
-        while(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET);
-        crc=0;
+    system_gpio_set_pin_state( radio_local->nss, SYSTEM_GPIO_PIN_STATE_LOW );
+    system_spi_write( radio_local->spi, command, command_length );
+    system_spi_write( radio_local->spi, &crc, 1 );
+    system_gpio_set_pin_state( radio_local->nss, SYSTEM_GPIO_PIN_STATE_HIGH );
 
-       /* NSS low */
-       HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-       HAL_SPI_Transmit(&hspi2, 0, 1,3000);
-       HAL_SPI_Receive(&hspi2,  &status, 1, 3000);
-       HAL_SPI_Transmit(&hspi2, 0, 1,3000);
-       HAL_SPI_Receive(&hspi2,  data, data_length, 3000);
-       HAL_SPI_Transmit(&hspi2, 0, 1,3000);
-       HAL_SPI_Receive(&hspi2, ( uint8_t* ) &crc, 1 , 3000);
-       HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
-       return LR1110_MODEM_HAL_STATUS_OK;
+    system_gpio_wait_for_state( radio_local->busy, SYSTEM_GPIO_PIN_STATE_HIGH );
+
+    crc = 0;
+
+    system_gpio_set_pin_state( radio_local->nss, SYSTEM_GPIO_PIN_STATE_LOW );
+    system_spi_read( radio_local->spi, ( uint8_t* ) &rc, 1 );
+    system_spi_read( radio_local->spi, data, data_length );
+    system_spi_read( radio_local->spi, ( uint8_t* ) &crc, 1 );
+    system_gpio_set_pin_state( radio_local->nss, SYSTEM_GPIO_PIN_STATE_HIGH );
+
+    return LR1110_MODEM_HAL_STATUS_OK;
+}
+
+lr1110_modem_hal_status_t lr1110_bootloader_hal_read( const void* context, const uint8_t* command,
+                                                      const uint16_t command_length, uint8_t* data,
+                                                      const uint16_t data_length )
+{
+    return LR1110_MODEM_HAL_STATUS_BAD_FRAME;
+}
+
+lr1110_modem_hal_status_t lr1110_modem_hal_write_read( const void* context, const uint8_t* command, uint8_t* data,
+                                                       const uint16_t data_length )
+{
+    return LR1110_MODEM_HAL_STATUS_BAD_FRAME;
 }
 
 lr1110_modem_hal_status_t lr1110_modem_hal_reset( const void* context )
 {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
-    HAL_Delay(1);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+    radio_t* radio_local = ( radio_t* ) context;
+
+    system_gpio_set_pin_state( radio_local->reset, SYSTEM_GPIO_PIN_STATE_LOW );
+    HAL_Delay( 1 );
+    system_gpio_set_pin_state( radio_local->reset, SYSTEM_GPIO_PIN_STATE_HIGH );
 
     return LR1110_MODEM_HAL_STATUS_OK;
 }
 
 void lr1110_modem_hal_enter_dfu( const void* context ) {}
+
 lr1110_modem_hal_status_t lr1110_modem_hal_wakeup( const void* context ) { return LR1110_MODEM_HAL_STATUS_BAD_FRAME; }
 
 lr1110_modem_hal_status_t lr1110_bootloader_hal_wakeup( const void* context )
 {
     return LR1110_MODEM_HAL_STATUS_BAD_FRAME;
 }
-/*
- * -----------------------------------------------------------------------------
- * --- PRIVATE FUNCTIONS DEFINITION --------------------------------------------
- */
-
-/* --- EOF ------------------------------------------------------------------ */

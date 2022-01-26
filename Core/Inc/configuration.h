@@ -39,8 +39,8 @@
 
 #include "lr1110_hal.h"
 #include "stm32wb55xx.h"
-//#include "stm32wbxx_ll_gpio.h"
-//#include "stm32wbxx_ll_spi.h"
+#include "stm32wbxx_ll_gpio.h"
+#include "stm32wbxx_ll_spi.h"
 
 /*
  * -----------------------------------------------------------------------------
@@ -52,37 +52,40 @@
  * --- PUBLIC CONSTANTS --------------------------------------------------------
  */
 
-#define LR1110_NSS_PORT GPIOA
-//#define LR1110_NSS_PIN LL_GPIO_PIN_8
-#define LR1110_RESET_PORT GPIOA
-//#define LR1110_RESET_PIN LL_GPIO_PIN_0
-#define LR1110_IRQ_PORT GPIOB
-//#define LR1110_IRQ_PIN LL_GPIO_PIN_4
+#define LR1110_NSS_PORT GPIOB
+#define LR1110_NSS_PIN LL_GPIO_PIN_12
+#define LR1110_RESET_PORT GPIOB
+#define LR1110_RESET_PIN LL_GPIO_PIN_0
+#define LR1110_IRQ_PORT GPIOA
+#define LR1110_IRQ_PIN LL_GPIO_PIN_5
 #define LR1110_BUSY_PORT GPIOB
-//#define LR1110_BUSY_PIN LL_GPIO_PIN_3
+#define LR1110_BUSY_PIN LL_GPIO_PIN_1
+
 
 #define LR1110_LED_SCAN_PORT GPIOB
-//#define LR1110_LED_SCAN_PIN LL_GPIO_PIN_5
-#define LR1110_LED_TX_PORT GPIOC
-//#define LR1110_LED_TX_PIN LL_GPIO_PIN_1
+#define LR1110_LED_SCAN_PIN LL_GPIO_PIN_2
+/*#define LR1110_LED_TX_PORT GPIOC
+#define LR1110_LED_TX_PIN LL_GPIO_PIN_1
 #define LR1110_LED_RX_PORT GPIOC
-//#define LR1110_LED_RX_PIN LL_GPIO_PIN_0
+#define LR1110_LED_RX_PIN LL_GPIO_PIN_0
+*/
 
 #define LR1110_LNA_PORT GPIOB
-//#define LR1110_LNA_PIN LL_GPIO_PIN_0
+#define LR1110_LNA_PIN LL_GPIO_PIN_5
 
+/*
 #define DISPLAY_NSS_PORT GPIOB
-//#define DISPLAY_NSS_PIN LL_GPIO_PIN_6
+#define DISPLAY_NSS_PIN LL_GPIO_PIN_6
 #define DISPLAY_DC_PORT GPIOC
-//#define DISPLAY_DC_PIN LL_GPIO_PIN_7
+#define DISPLAY_DC_PIN LL_GPIO_PIN_7
 
 #define TOUCH_IRQ_PORT GPIOA
-//#define TOUCH_IRQ_PIN LL_GPIO_PIN_10
+#define TOUCH_IRQ_PIN LL_GPIO_PIN_10
 
 #define FLASH_NSS_PORT GPIOB
-//#define FLASH_NSS_PIN LL_GPIO_PIN_10
+#define FLASH_NSS_PIN LL_GPIO_PIN_10
 #define ACCELERATOR_IRQ_PORT GPIOA
-//#define ACCELERATOR_IRQ_PIN LL_GPIO_PIN_9
+#define ACCELERATOR_IRQ_PIN LL_GPIO_PIN_9
 
 #define ANTENNA_SWITCH_CTRL_PORT ( GPIOC )
 #define ANTENNA_SWITCH_CTRL_PIN ( LL_GPIO_PIN_8 )
@@ -91,6 +94,7 @@
 
 #define BUTTON_BLUE_PORT ( GPIOC )
 #define BUTTON_BLUE_PIN ( LL_GPIO_PIN_13 )
+*/
 
 /*
  * -----------------------------------------------------------------------------
@@ -111,7 +115,7 @@ typedef struct
     gpio_t       irq;
     gpio_t       busy;
 } radio_t;
-radio_t lr1110;
+
 #endif
 
 /*

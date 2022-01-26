@@ -20,14 +20,10 @@
  *
  * \author    Gregory Cristian ( Semtech )
  */
+#include <system_gpio.h>
 #include "stm32wbxx.h"
 #include "utilities.h"
 #include "main.h"
-#include "gpio.h"
-//#include "adc.h"
-#include "spi.h"
-//#include "i2c.h"
-//#include "uart.h"
 #include "timer.h"
 //#include "sysIrqHandlers.h"
 #include "board-config.h"

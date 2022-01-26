@@ -41,6 +41,8 @@
 #include "lr1110_firmware_update.h"
 #include "lr1110_modem_lorawan.h"
 #include "timer.h"
+#include "system_spi.h"
+#include "system_gpio.h"
 #include "main.h"
 #include <stdint.h>
 
@@ -64,6 +66,8 @@
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
 
+static gpio_t lr1110_busy     = { LR1110_BUSY_PORT, LR1110_BUSY_PIN };
+
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE FUNCTIONS DECLARATION -------------------------------------------
@@ -79,31 +83,17 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
 {
     lr1110_fw_update_status_t   status             = LR1110_FW_UPDATE_ERROR;
     lr1110_bootloader_version_t version_bootloader = { 0 };
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
     char data[100];
-
-
-    lr1110_system_stat1_t stat1;
-    lr1110_system_stat2_t stat2;
-    uint32_t              irq;
 
     printf( "Reset the chip...\n" );
 
-    GPIO_InitStruct.Pin = GPIO_PIN_1;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+    system_gpio_init_direction_state( lr1110_busy, SYSTEM_GPIO_PIN_DIRECTION_OUTPUT, SYSTEM_GPIO_PIN_STATE_LOW );
 
     lr1110_system_reset( radio );
 
     HAL_Delay(500);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_1;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    system_gpio_init_direction_state( lr1110_busy, SYSTEM_GPIO_PIN_DIRECTION_INPUT, SYSTEM_GPIO_PIN_STATE_LOW );
 
     HAL_Delay(100);
     lr1110_modem_version_t version;
@@ -223,11 +213,11 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
             HAL_Delay(2000);
             lr1110_system_reset( radio );
             TimerTime_t past = TimerGetCurrentTime();
-            TimerTime_t curr = 0;
-            while((HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == GPIO_PIN_RESET) || curr<3000)
-            {
-              	curr = TimerGetElapsedTime( past );
-            }
+                        	TimerTime_t curr = 0;
+                	while((HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == GPIO_PIN_RESET) || curr<3000)
+                	{
+                	  	curr = TimerGetElapsedTime( past );
+                	}
 
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);//LED ON
 
@@ -251,11 +241,11 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
             {
                 status = LR1110_FW_UPDATE_OK;
                 sprintf( data,"Expected firmware running!\n" );
-		CDC_Transmit_FS(&data, strlen(data));
-        	HAL_Delay( 500 );
+                CDC_Transmit_FS(&data, strlen(data));
+                        HAL_Delay( 500 );
                 sprintf( data,"Please flash another application (like EVK Demo App).\n" );
-		CDC_Transmit_FS(&data, strlen(data));
-        	HAL_Delay( 500 );
+                CDC_Transmit_FS(&data, strlen(data));
+                        HAL_Delay( 500 );
                 //LED Blink
                 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
                 HAL_Delay(500);
@@ -265,8 +255,8 @@ lr1110_fw_update_status_t lr1110_update_firmware( void* radio, lr1110_fw_update_
             {
                 status = LR1110_FW_UPDATE_ERROR;
                 sprintf( data,"Error! Wrong firmware version - please retry.\n" );
-		CDC_Transmit_FS(&data, strlen(data));
-        	HAL_Delay( 500 );
+                CDC_Transmit_FS(&data, strlen(data));
+                        HAL_Delay( 500 );
                 //LED Blink
                 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_SET);
                 HAL_Delay(500);

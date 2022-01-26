@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "lr1110_hal.h"
 #include "configuration.h"
+#include "system_spi.h"
 #include "lr1110_system.h"
 #include "lr1110_radio.h"
 #include "rtc-board.h"
@@ -34,6 +35,7 @@
 #include "lr1110_regmem.h"
 #include "lr1110_crypto_engine_types.h"
 #include "lr1110_crypto_engine.h"
+#include "system_gpio.h"
 
 #include "lr1110_modem_1.1.7.h"
 //#include "lr1110_trx_0306.h"
@@ -67,7 +69,14 @@ QSPI_HandleTypeDef hqspi;
 SPI_HandleTypeDef hspi2;
 
 /* USER CODE BEGIN PV */
-extern radio_t lr1110;
+radio_t lr1110 = {
+    SPI1,
+    { LR1110_NSS_PORT, LR1110_NSS_PIN },
+    { LR1110_RESET_PORT, LR1110_RESET_PIN },
+    { LR1110_IRQ_PORT, LR1110_IRQ_PIN },
+    { LR1110_BUSY_PORT, LR1110_BUSY_PIN },
+};
+gpio_t led_red = { LR1110_LED_SCAN_PORT, LR1110_LED_SCAN_PIN};
 /*lr1110_radio_pa_config_t pa_cfg;
 lr1110_radio_modulation_param_lora_t mod_params;
 lr1110_radio_packet_param_lora_t pkt_param;
@@ -132,9 +141,11 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  system_gpio_init();
   MX_USB_Device_Init();
   //MX_RTC_Init();
-  MX_SPI2_Init();
+  //MX_SPI2_Init();
+  system_spi_init();
   MX_LPTIM1_Init();
   MX_QUADSPI_Init();
   /* USER CODE BEGIN 2 */
@@ -156,6 +167,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  //system_gpio_set_pin_state( led_red, SYSTEM_GPIO_PIN_STATE_HIGH );
 
   while (1)
   {
@@ -503,7 +515,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : PA3 PA4 PA5 PA8
                            PA9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_8
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_8//GPIO_PIN_5|
                           |GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -516,19 +528,19 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB2 PB0 PB12 PB5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_2|GPIO_PIN_12|GPIO_PIN_5;
+  GPIO_InitStruct.Pin = GPIO_PIN_2;//|GPIO_PIN_0|GPIO_PIN_12|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+  //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+  //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
 
   /*Configure GPIO pin : PB1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  /*GPIO_InitStruct.Pin = GPIO_PIN_1;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);*/
 
   /*Configure GPIO pin : PE4 */
   GPIO_InitStruct.Pin = GPIO_PIN_4;
