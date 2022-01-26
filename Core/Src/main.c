@@ -70,7 +70,7 @@ SPI_HandleTypeDef hspi2;
 
 /* USER CODE BEGIN PV */
 radio_t lr1110 = {
-    SPI1,
+    SPI2,
     { LR1110_NSS_PORT, LR1110_NSS_PIN },
     { LR1110_RESET_PORT, LR1110_RESET_PIN },
     { LR1110_IRQ_PORT, LR1110_IRQ_PIN },
