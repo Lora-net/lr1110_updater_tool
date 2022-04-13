@@ -1,6 +1,10 @@
 
 # LR1110 Updater tool
 
+This project has moved to [LR11xx updater tool](https://github.com/Lora-net/SWTL001) project.
+
+The source code remains available but will not be maintained.
+
 ## Introduction
 
 This project gives an implementation example of the flash memory update mechanism available in the LR1110 radio.
